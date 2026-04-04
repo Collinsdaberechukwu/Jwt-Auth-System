@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: Jwt-Auth-System
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/jwtAuthSystemDb?useSSL=false&serverTimezone=UTC
+    username: root
+    password: "@Collins20"
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+server:
+  port: 9081
