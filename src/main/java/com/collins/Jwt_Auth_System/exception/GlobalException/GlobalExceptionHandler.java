@@ -2,6 +2,7 @@ package com.collins.Jwt_Auth_System.exception.GlobalException;
 
 import com.collins.Jwt_Auth_System.dtos.ErrorResponseDto;
 import com.collins.Jwt_Auth_System.exception.AdminAlreadyExistException;
+import com.collins.Jwt_Auth_System.exception.InvalidLoginException;
 import com.collins.Jwt_Auth_System.exception.ResourceNotFoundException;
 import com.collins.Jwt_Auth_System.exception.UserAlreadyExistException;
 import org.springframework.http.HttpHeaders;
@@ -89,5 +90,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 LocalDateTime.now()
         );
         return new ResponseEntity<>(responseDto,HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidLoginException.class)
+    public ResponseEntity<ErrorResponseDto> handleInvalidLoginException(InvalidLoginException exception,
+                                                                        WebRequest webRequest){
+
+        ErrorResponseDto errorResponseDto = new ErrorResponseDto(
+                webRequest.getDescription(false),
+                HttpStatus.TOO_MANY_REQUESTS,
+                exception.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(errorResponseDto,HttpStatus.TOO_MANY_REQUESTS);
     }
 }

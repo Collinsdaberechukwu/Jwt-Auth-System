@@ -15,3 +15,15 @@ spring:
 
 server:
   port: 9081
+
+resilience4j:
+  ratelimiter:
+    instances:
+
+      authLimiter:
+        limitForPeriod: 3
+        limitRefreshPeriod: 1m
+        timeoutDuration: 2m
+        ignored-exceptions:
+          - com.collins.Jwt_Auth_System.exception.InvalidLoginException
+          - com.collins.Jwt_Auth_System.exception.ResourceNotFoundException

@@ -29,6 +29,12 @@ public class User extends BaseEntity{
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
+    private int failedLoginAttempts;
+
+    private boolean accountLocked;
+
+    private LocalDateTime lockTime;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id")
     @ToString.Exclude

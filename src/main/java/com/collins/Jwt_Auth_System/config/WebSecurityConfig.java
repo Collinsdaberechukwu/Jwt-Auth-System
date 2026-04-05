@@ -32,7 +32,8 @@ public class WebSecurityConfig {
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(request-> request
                         .requestMatchers("/api/v1/users/register_user",
-                                                    "/api/v1/users/login")
+                                                    "/api/v1/users/login",
+                                                    "/api/v1/users/public/health")
                                                     .permitAll()
                         .anyRequest().authenticated()
                 )
