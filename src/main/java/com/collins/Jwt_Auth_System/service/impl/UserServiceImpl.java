@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -82,8 +83,10 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity<ResponseDto<UserCreationResponse>> registerAdmin(UserCreationRequest creationRequest) {
         log.info("Create admin with email: {}", creationRequest.getEmail());
 
-        if (userRepository.existsByEmail(creationRequest.getEmail())) {
-            throw new AdminAlreadyExistException("Admin user with email already exist " + creationRequest.getEmail());
+        Optional<User> existingUser = userRepository.findOptionalByEmail(creationRequest.getEmail());
+
+        if (existingUser.isPresent() && existingUser.get().getRole().getRoleName() == RoleType.ROLE_ADMIN) {
+            throw new AdminAlreadyExistException("Admin already exists");
         }
 
         User newAdmin = UserMapper.mapToUser(creationRequest);

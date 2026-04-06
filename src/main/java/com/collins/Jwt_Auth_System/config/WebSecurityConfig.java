@@ -34,10 +34,11 @@ public class WebSecurityConfig {
                         .requestMatchers(
                                 "/api/v1/users/register_user",
                                 "/api/v1/users/login",
-                                "/api/v1/users/public_health"
+                                "/api/v1/users/public_health",
+                                "/api/v1/users/register-admin"
                         ).permitAll()
                         .requestMatchers(
-                                "/api/v1/users/admin_register",
+//                                "/api/v1/users/register-admin",
                                 "/api/v1/users/admin/**"
                         ).hasRole("ADMIN")
 

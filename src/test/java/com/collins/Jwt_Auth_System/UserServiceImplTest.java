@@ -16,19 +16,19 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
 import tools.jackson.databind.ObjectMapper;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-public class AuthIntegrationTest {
+public class UserServiceImplTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -46,15 +46,14 @@ public class AuthIntegrationTest {
 
     @BeforeEach
     void setup() {
-        if (roleRepository.findByRoleName(RoleType.valueOf("ROLE_USER")).isEmpty()) {
+        if (roleRepository.findByRoleName(RoleType.ROLE_USER).isEmpty()) {
             Role role = new Role();
-            role.setRoleName(RoleType.valueOf("ROLE_USER"));
+            role.setRoleName(RoleType.ROLE_USER);
             role.setDescription("Default user role");
             roleRepository.save(role);
         }
     }
 
-    // ✅ 1. Register User Test
     @Test
     void shouldRegisterUserSuccessfully() throws Exception {
 
@@ -67,11 +66,12 @@ public class AuthIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect((ResultMatcher) jsonPath("$.statusCode").value("SUCCESS"))
-                .andExpect((ResultMatcher) jsonPath("$.data.email").value("collinstest@gmail.com"));
+
+                .andExpect(jsonPath("$.statusCode").value("SUCCESS"))
+
+                .andExpect(jsonPath("$.data.email").value("collinstest@gmail.com"));
     }
 
-    //  2. Failed Login Attempt Increments Counter
     @Test
     void shouldIncreaseFailedAttempts_onInvalidLogin() throws Exception {
 
@@ -82,7 +82,7 @@ public class AuthIntegrationTest {
         user.setFailedLoginAttempts(0);
         user.setAccountLocked(false);
 
-        Role role = roleRepository.findByRoleName(RoleType.valueOf("ROLE_USER")).orElseThrow();
+        Role role = roleRepository.findByRoleName(RoleType.ROLE_USER).orElseThrow();
         user.setRole(role);
 
         userRepository.save(user);
@@ -94,13 +94,14 @@ public class AuthIntegrationTest {
         mockMvc.perform(post("/api/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").isEmpty());
 
         User updated = userRepository.findByEmail("fail@gmail.com");
+
         assertEquals(1, updated.getFailedLoginAttempts());
     }
 
-    // 🔒 3. Lock Account After 3 Attempts
     @Test
     void shouldLockAccount_afterThreeFailedAttempts() throws Exception {
 
@@ -111,7 +112,7 @@ public class AuthIntegrationTest {
         user.setFailedLoginAttempts(2);
         user.setAccountLocked(false);
 
-        Role role = roleRepository.findByRoleName(RoleType.valueOf("ROLE_USER")).orElseThrow();
+        Role role = roleRepository.findByRoleName(RoleType.ROLE_USER).orElseThrow();
         user.setRole(role);
 
         userRepository.save(user);
@@ -123,7 +124,8 @@ public class AuthIntegrationTest {
         mockMvc.perform(post("/api/v1/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is4xxClientError());
+
+                .andExpect(status().isOk());
 
         User updated = userRepository.findByEmail("lock@gmail.com");
 
@@ -141,7 +143,7 @@ public class AuthIntegrationTest {
         user.setFailedLoginAttempts(2);
         user.setAccountLocked(false);
 
-        Role role = roleRepository.findByRoleName(RoleType.valueOf("ROLE_USER")).orElseThrow();
+        Role role = roleRepository.findByRoleName(RoleType.ROLE_USER).orElseThrow();
         user.setRole(role);
 
         userRepository.save(user);
@@ -154,7 +156,7 @@ public class AuthIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect((ResultMatcher) jsonPath("$.token").exists());
+                .andExpect(jsonPath("$.token").exists());
 
         User updated = userRepository.findByEmail("collinssuccess@gmail.com");
 

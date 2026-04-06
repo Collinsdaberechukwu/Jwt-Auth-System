@@ -35,8 +35,11 @@ public class AuthController {
         return userService.registerUser(creationRequest);
     }
 
-    @PostMapping("/admin_register")
-    public ResponseEntity<ResponseDto<UserCreationResponse>> registerAdmin(@Valid @RequestBody UserCreationRequest request) {
+
+    @PostMapping("/register-admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseDto<UserCreationResponse>> registerAdmin(
+                                                            @Valid @RequestBody UserCreationRequest request) {
         return userService.registerAdmin(request);
     }
 
@@ -59,4 +62,6 @@ public class AuthController {
     public ResponseEntity<ResponseDto<List<UserCreationResponse>>> getAllUsers() {
         return userService.getAllUsers();
     }
+
+
 }
