@@ -1,6 +1,7 @@
 package com.collins.Jwt_Auth_System.config;
 
 import com.collins.Jwt_Auth_System.dtos.requests.LoginRequest;
+import com.collins.Jwt_Auth_System.enums.RoleType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -19,10 +20,12 @@ public class JwtService {
 
     private final String secretKey = "QWERTYUIOPASDFGHJKLZXCVBNM1234567890abcdef=";
 
-    public String generateToken(LoginRequest loginRequest){
+    public String generateToken(LoginRequest loginRequest, RoleType role){
+
         Map<String,Object> claims = new HashMap<>();
         claims.put("email",loginRequest.getEmail());
-        claims.put("role","User");
+        claims.put("role",role.name());
+
 
         return Jwts.builder()
                 .setClaims(claims)

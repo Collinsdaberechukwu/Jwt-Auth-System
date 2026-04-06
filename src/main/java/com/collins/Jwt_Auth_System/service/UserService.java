@@ -1,6 +1,7 @@
 package com.collins.Jwt_Auth_System.service;
 
 import com.collins.Jwt_Auth_System.dtos.ResponseDto;
+import com.collins.Jwt_Auth_System.dtos.requests.FetchUserRequest;
 import com.collins.Jwt_Auth_System.dtos.requests.LoginRequest;
 import com.collins.Jwt_Auth_System.dtos.requests.UserCreationRequest;
 import com.collins.Jwt_Auth_System.dtos.response.UserCreationResponse;
@@ -15,9 +16,13 @@ import java.util.List;
 public interface UserService {
     ResponseEntity<ResponseDto<UserCreationResponse>> registerUser(UserCreationRequest creationRequest);
 
+    ResponseEntity<ResponseDto<UserCreationResponse>> registerAdmin(UserCreationRequest creationRequest);
+
     ResponseEntity<UserLoginResponse> loginUser(LoginRequest loginRequest);
 
-    ResponseEntity<ResponseDto<User>> findByEmail(String email);
+    ResponseEntity<ResponseDto<UserCreationResponse>> findByEmail(FetchUserRequest fetchUserRequest);
 
-    ResponseEntity<ResponseDto<List<User>>> getAllUsers();
+    ResponseEntity<ResponseDto<List<UserCreationResponse>>> getAllUsers();
+
+//    ResponseEntity<ResponseDto<List<User>>> getAllUsers();
 }

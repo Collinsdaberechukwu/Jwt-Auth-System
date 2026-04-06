@@ -46,9 +46,9 @@ public class AuthIntegrationTest {
 
     @BeforeEach
     void setup() {
-        if (roleRepository.findByRoleName(RoleType.valueOf("USER")).isEmpty()) {
+        if (roleRepository.findByRoleName(RoleType.valueOf("ROLE_USER")).isEmpty()) {
             Role role = new Role();
-            role.setRoleName(RoleType.valueOf("USER"));
+            role.setRoleName(RoleType.valueOf("ROLE_USER"));
             role.setDescription("Default user role");
             roleRepository.save(role);
         }
@@ -59,8 +59,8 @@ public class AuthIntegrationTest {
     void shouldRegisterUserSuccessfully() throws Exception {
 
         UserCreationRequest request = new UserCreationRequest();
-        request.setEmail("test@gmail.com");
-        request.setUserName("Test User");
+        request.setEmail("collinstest@gmail.com");
+        request.setUserName("Collins Test User");
         request.setPassword("password123");
 
         mockMvc.perform(post("/api/v1/users/register_user")
@@ -68,7 +68,7 @@ public class AuthIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect((ResultMatcher) jsonPath("$.statusCode").value("SUCCESS"))
-                .andExpect((ResultMatcher) jsonPath("$.data.email").value("test@gmail.com"));
+                .andExpect((ResultMatcher) jsonPath("$.data.email").value("collinstest@gmail.com"));
     }
 
     //  2. Failed Login Attempt Increments Counter
@@ -82,7 +82,7 @@ public class AuthIntegrationTest {
         user.setFailedLoginAttempts(0);
         user.setAccountLocked(false);
 
-        Role role = roleRepository.findByRoleName(RoleType.valueOf("USER")).orElseThrow();
+        Role role = roleRepository.findByRoleName(RoleType.valueOf("ROLE_USER")).orElseThrow();
         user.setRole(role);
 
         userRepository.save(user);
@@ -111,7 +111,7 @@ public class AuthIntegrationTest {
         user.setFailedLoginAttempts(2);
         user.setAccountLocked(false);
 
-        Role role = roleRepository.findByRoleName(RoleType.valueOf("USER")).orElseThrow();
+        Role role = roleRepository.findByRoleName(RoleType.valueOf("ROLE_USER")).orElseThrow();
         user.setRole(role);
 
         userRepository.save(user);
@@ -131,24 +131,23 @@ public class AuthIntegrationTest {
         assertEquals(3, updated.getFailedLoginAttempts());
     }
 
-    // 🔐 4. Successful Login Resets Attempts
     @Test
     void shouldResetAttempts_onSuccessfulLogin() throws Exception {
 
         User user = new User();
-        user.setEmail("success@gmail.com");
+        user.setEmail("collinssuccess@gmail.com");
         user.setUserName("Success User");
         user.setPassword(passwordEncoder.encode("password123"));
         user.setFailedLoginAttempts(2);
         user.setAccountLocked(false);
 
-        Role role = roleRepository.findByRoleName(RoleType.valueOf("USER")).orElseThrow();
+        Role role = roleRepository.findByRoleName(RoleType.valueOf("ROLE_USER")).orElseThrow();
         user.setRole(role);
 
         userRepository.save(user);
 
         LoginRequest request = new LoginRequest();
-        request.setEmail("success@gmail.com");
+        request.setEmail("collinssuccess@gmail.com");
         request.setPassword("password123");
 
         mockMvc.perform(post("/api/v1/users/login")
@@ -157,7 +156,7 @@ public class AuthIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect((ResultMatcher) jsonPath("$.token").exists());
 
-        User updated = userRepository.findByEmail("success@gmail.com");
+        User updated = userRepository.findByEmail("collinssuccess@gmail.com");
 
         assertEquals(0, updated.getFailedLoginAttempts());
     }

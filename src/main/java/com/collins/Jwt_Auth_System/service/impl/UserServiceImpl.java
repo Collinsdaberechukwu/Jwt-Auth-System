@@ -2,6 +2,7 @@ package com.collins.Jwt_Auth_System.service.impl;
 
 import com.collins.Jwt_Auth_System.config.JwtService;
 import com.collins.Jwt_Auth_System.dtos.ResponseDto;
+import com.collins.Jwt_Auth_System.dtos.requests.FetchUserRequest;
 import com.collins.Jwt_Auth_System.dtos.requests.LoginRequest;
 import com.collins.Jwt_Auth_System.dtos.requests.UserCreationRequest;
 import com.collins.Jwt_Auth_System.dtos.response.UserCreationResponse;
@@ -9,6 +10,7 @@ import com.collins.Jwt_Auth_System.dtos.response.UserLoginResponse;
 import com.collins.Jwt_Auth_System.enums.RoleType;
 import com.collins.Jwt_Auth_System.event.LoginCreatedEvent;
 import com.collins.Jwt_Auth_System.event.UserCreatedEvent;
+import com.collins.Jwt_Auth_System.exception.AdminAlreadyExistException;
 import com.collins.Jwt_Auth_System.exception.InvalidLoginException;
 import com.collins.Jwt_Auth_System.exception.ResourceNotFoundException;
 import com.collins.Jwt_Auth_System.exception.UserAlreadyExistException;
@@ -32,6 +34,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -58,7 +61,7 @@ public class UserServiceImpl implements UserService {
         User newUser = UserMapper.mapToUser(creationRequest);
         newUser.setPassword(passwordEncoder.encode(creationRequest.getPassword()));
 
-        Role role = roleRepository.findByRoleName(RoleType.valueOf(RoleType.ROLE_USER.getRoleType()))
+        Role role = roleRepository.findByRoleName(RoleType.ROLE_USER)
                 .orElseThrow(() -> new ResourceNotFoundException("User role not found"));
         newUser.setRole(role);
 
@@ -73,6 +76,35 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(userCreationResponseResponseDto);
+    }
+
+    @Override
+    public ResponseEntity<ResponseDto<UserCreationResponse>> registerAdmin(UserCreationRequest creationRequest) {
+        log.info("Create admin with email: {}", creationRequest.getEmail());
+
+        if (userRepository.existsByEmail(creationRequest.getEmail())) {
+            throw new AdminAlreadyExistException("Admin user with email already exist " + creationRequest.getEmail());
+        }
+
+        User newAdmin = UserMapper.mapToUser(creationRequest);
+        newAdmin.setPassword(passwordEncoder.encode(creationRequest.getPassword()));
+
+        Role role = roleRepository.findByRoleName(RoleType.ROLE_ADMIN)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin role not found"));
+        newAdmin.setRole(role);
+
+        User savedAdmin = userRepository.save(newAdmin);
+        publisher.publishEvent(new UserCreatedEvent(savedAdmin));
+
+        UserCreationResponse response = UserMapper.mapToUserResponse(savedAdmin);
+
+        ResponseDto<UserCreationResponse> responseDto = ResponseDto.<UserCreationResponse>builder()
+                .statusCode("SUCCESS")
+                .statusMessage("Admin registered successfully")
+                .data(response)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     @RateLimiter(name = "authLimiter", fallbackMethod = "loginRateLimitFallback")
@@ -110,7 +142,7 @@ public class UserServiceImpl implements UserService {
             user.setFailedLoginAttempts(0);
             userRepository.save(user);
 
-            String jwtToken = jwtService.generateToken(loginRequest);
+            String jwtToken = jwtService.generateToken(loginRequest, user.getRole().getRoleName());
 
             UserLoginResponse loginResponse = new UserLoginResponse();
             loginResponse.setWelcomeMessage("Welcome " + authentication.getName() +
@@ -151,33 +183,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity<ResponseDto<User>> findByEmail(String email) {
-        log.info("Fetching user by email: {}", email);
-
-        User user = userRepository.findByEmail(email);
+    public ResponseEntity<ResponseDto<UserCreationResponse>> findByEmail(FetchUserRequest fetchUserRequest) {
+        User user = userRepository.findByEmail(fetchUserRequest.getEmail());
         if (user == null) {
-            throw new ResourceNotFoundException("User not found with email " + email);
+            throw new ResourceNotFoundException("User not found with email " + fetchUserRequest.getEmail());
         }
 
-        ResponseDto<User> responseDto = ResponseDto.<User>builder()
+        UserCreationResponse dto = UserMapper.mapToUserResponse(user);
+
+        ResponseDto<UserCreationResponse> response = ResponseDto.<UserCreationResponse>builder()
                 .statusCode("SUCCESS")
                 .statusMessage("User retrieved successfully")
-                .data(user)
+                .data(dto)
                 .build();
 
-        return ResponseEntity.ok(responseDto);
+        return ResponseEntity.ok(response);
     }
 
     @Override
-    public ResponseEntity<ResponseDto<List<User>>> getAllUsers() {
-        log.info("Fetching all users");
-
+    public ResponseEntity<ResponseDto<List<UserCreationResponse>>> getAllUsers() {
         List<User> users = userRepository.findAll();
 
-        ResponseDto<List<User>> responseDto = ResponseDto.<List<User>>builder()
+        List<UserCreationResponse> dtos = UserMapper.mapToUserResponseList(users);
+
+        ResponseDto<List<UserCreationResponse>> responseDto = ResponseDto.<List<UserCreationResponse>>builder()
                 .statusCode("SUCCESS")
                 .statusMessage("All users retrieved successfully")
-                .data(users)
+                .data(dtos)
                 .build();
 
         return ResponseEntity.ok(responseDto);

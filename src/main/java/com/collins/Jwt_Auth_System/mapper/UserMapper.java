@@ -5,6 +5,8 @@ import com.collins.Jwt_Auth_System.dtos.response.UserCreationResponse;
 import com.collins.Jwt_Auth_System.model.User;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class UserMapper {
 
@@ -31,5 +33,11 @@ public class UserMapper {
                 applicationUser.getRole() != null ? String.valueOf(applicationUser.getRole().getRoleName()) : null
         );
         return userCreationResponse;
+    }
+
+    public static List<UserCreationResponse> mapToUserResponseList(List<User> users){
+        return users.stream()
+                .map(UserMapper::mapToUserResponse)
+                .collect(Collectors.toList());
     }
 }

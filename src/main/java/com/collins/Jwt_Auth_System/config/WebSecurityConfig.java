@@ -31,10 +31,16 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session-> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(request-> request
-                        .requestMatchers("/api/v1/users/register_user",
-                                                    "/api/v1/users/login",
-                                                    "/api/v1/users/public/health")
-                                                    .permitAll()
+                        .requestMatchers(
+                                "/api/v1/users/register_user",
+                                "/api/v1/users/login",
+                                "/api/v1/users/public_health"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/api/v1/users/admin_register",
+                                "/api/v1/users/admin/**"
+                        ).hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
