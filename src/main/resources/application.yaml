@@ -2,6 +2,9 @@ spring:
   application:
     name: Jwt-Auth-System
 
+
+
+
   datasource:
     url: jdbc:mysql://localhost:3306/jwtAuthSystemDb?useSSL=false&serverTimezone=UTC
     username: root
@@ -15,6 +18,8 @@ spring:
 
 server:
   port: 9081
+
+
 
 resilience4j:
   ratelimiter:

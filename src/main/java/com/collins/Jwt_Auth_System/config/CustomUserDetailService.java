@@ -1,6 +1,5 @@
 package com.collins.Jwt_Auth_System.config;
 
-import com.collins.Jwt_Auth_System.model.Role;
 import com.collins.Jwt_Auth_System.model.User;
 import com.collins.Jwt_Auth_System.repository.UserRepository;
 import jakarta.transaction.Transactional;

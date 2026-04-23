@@ -6,7 +6,6 @@ import com.collins.Jwt_Auth_System.dtos.requests.LoginRequest;
 import com.collins.Jwt_Auth_System.dtos.requests.UserCreationRequest;
 import com.collins.Jwt_Auth_System.dtos.response.UserCreationResponse;
 import com.collins.Jwt_Auth_System.dtos.response.UserLoginResponse;
-import com.collins.Jwt_Auth_System.model.User;
 import org.springframework.security.core.Authentication;
 import com.collins.Jwt_Auth_System.service.UserService;
 import jakarta.validation.Valid;
