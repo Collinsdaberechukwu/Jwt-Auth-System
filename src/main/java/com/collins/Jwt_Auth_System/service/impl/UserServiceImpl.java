@@ -40,7 +40,7 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -216,4 +216,6 @@ public class UserServiceImpl implements UserService {
 
         return ResponseEntity.ok(responseDto);
     }
+
+
 }
